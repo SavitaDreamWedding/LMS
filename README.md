@@ -1,13 +1,11 @@
 Library Management Portal (LMS Lite)
  A comprehensive Library Management System built with ASP.NET MVC 5, ADO.NET, and modern web
  technologies.
- 🛠
  Tech Stack
  Backend: ASP.NET MVC 5 (.NET Framework 4.8)
  Database: SQL Server with ADO.NET (No ORM)
  Frontend: Bootstrap 5, jQuery, Chart.js
  Architecture: Clean separation with Library.Core and Library.Web projects
- 📦
  Features
  Master Modules
  Books Management: CRUD operations for books with real-time availability tracking
@@ -22,7 +20,6 @@ Library Management Portal (LMS Lite)
  Overdue Members Report: Track and manage late returns
  Book History: Complete transaction history per book
  Visual Analytics: Chart.js powered insights
- 🚀
  Setup Instructions
  Prerequisites
  Visual Studio 2019/2022
