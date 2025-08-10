@@ -1,0 +1,219 @@
+﻿@model List<Library.Core.Models.MemberMaster>
+@{
+    ViewBag.Title = "Members Management";
+}
+
+<div id="alerts-container"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="fas fa-users"></i> Members Management</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#memberModal" onclick="openAddMemberModal()">
+        <i class="fas fa-plus"></i> Add New Member
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Mobile</th>
+                        <th>Email</th>
+                        <th>Member Since</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var member in Model)
+                        {
+                            <tr>
+                                <td>@member.FullName</td>
+                                <td>@member.Mobile</td>
+                                <td>@member.Email</td>
+                                <td>@member.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-primary" onclick="editMember(@member.MemberId)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" onclick="deleteMember(@member.MemberId, '@member.FullName')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info" onclick="viewMemberHistory(@member.MemberId)">
+                                            <i class="fas fa-history"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No members found</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Member Modal -->
+<div class="modal fade" id="memberModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="memberModalTitle">Add New Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="memberForm" novalidate>
+                <div class="modal-body">
+                    <input type="hidden" id="MemberId" name="MemberId" value="0" />
+
+                    <div class="mb-3">
+                        <label for="FullName" class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="FullName" name="FullName" required maxlength="255">
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Mobile" class="form-label">Mobile *</label>
+                        <input type="text" class="form-control" id="Mobile" name="Mobile" required pattern="[0-9]{10}" maxlength="10">
+                        <div class="invalid-feedback"></div>
+                        <div class="form-text">Enter 10-digit mobile number</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="Email" name="Email" maxlength="255">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+$(document).ready(function() {
+    // Initialize form validation
+    $('#memberForm').validate({
+        rules: {
+            FullName: { required: true, maxlength: 255 },
+            Mobile: { required: true, pattern: /^[0-9]{10}$/ },
+            Email: { email: true, maxlength: 255 }
+        },
+        messages: {
+            FullName: { required: "Full Name is required", maxlength: "Full Name cannot exceed 255 characters" },
+            Mobile: { required: "Mobile is required", pattern: "Mobile must be 10 digits" },
+            Email: { email: "Invalid email format", maxlength: "Email cannot exceed 255 characters" }
+        },
+        errorClass: "is-invalid",
+        validClass: "is-valid",
+        errorPlacement: function(error, element) {
+            error.addClass("invalid-feedback");
+            element.closest('.mb-3').find('.invalid-feedback').html(error.text());
+        },
+        highlight: function(element) {
+            $(element).addClass("is-invalid").removeClass("is-valid");
+        },
+        unhighlight: function(element) {
+            $(element).addClass("is-valid").removeClass("is-invalid");
+        }
+    });
+
+    // Handle form submission
+    $('#memberForm').on('submit', function(e) {
+        e.preventDefault();
+
+        if (!$(this).valid()) return;
+
+        var formData = {
+            MemberId: $('#MemberId').val(),
+            FullName: $('#FullName').val(),
+            Mobile: $('#Mobile').val(),
+            Email: $('#Email').val()
+        };
+
+        var url = formData.MemberId == 0 ? '@Url.Action("Create", "MemberMaster")' : '@Url.Action("Edit", "MemberMaster")';
+
+        $.post(url, formData)
+            .done(function(response) {
+                if (response.success) {
+                    $('#memberModal').modal('hide');
+                    showAlert('success', response.message);
+                    setTimeout(function() { location.reload(); }, 1500);
+                } else {
+                    showAlert('error', response.message);
+                }
+            })
+            .fail(function() {
+                showAlert('error', 'An error occurred while saving the member.');
+            });
+    });
+});
+
+function openAddMemberModal() {
+    $('#memberModalTitle').text('Add New Member');
+    $('#memberForm')[0].reset();
+    $('#MemberId').val(0);
+    $('.is-invalid').removeClass('is-invalid');
+    $('.is-valid').removeClass('is-valid');
+}
+
+function editMember(memberId) {
+    $.get('@Url.Action("GetMember", "MemberMaster")', { id: memberId })
+        .done(function(response) {
+            if (response.success) {
+                var member = response.data;
+                $('#memberModalTitle').text('Edit Member');
+                $('#MemberId').val(member.MemberId);
+                $('#FullName').val(member.FullName);
+                $('#Mobile').val(member.Mobile);
+                $('#Email').val(member.Email);
+
+                $('#memberModal').modal('show');
+            } else {
+                showAlert('error', response.message);
+            }
+        })
+        .fail(function() {
+            showAlert('error', 'Failed to load member details.');
+        });
+}
+
+function deleteMember(memberId, fullName) {
+    confirmDelete('Are you sure you want to delete "' + fullName + '"?', function() {
+        $.post('@Url.Action("Delete", "MemberMaster")', { id: memberId })
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('success', response.message);
+                    setTimeout(function() { location.reload(); }, 1500);
+                } else {
+                    showAlert('error', response.message);
+                }
+            })
+            .fail(function() {
+                showAlert('error', 'An error occurred while deleting the member.');
+            });
+    });
+}
+
+function viewMemberHistory(memberId) {
+    // Could redirect to member history page
+    showAlert('info', 'Member history feature coming soon!');
+}
+    </script>
+}

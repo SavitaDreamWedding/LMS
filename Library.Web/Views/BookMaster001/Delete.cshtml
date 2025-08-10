@@ -1,0 +1,50 @@
+﻿@model Library.Core.Models.BookMaster
+
+@{
+    ViewBag.Title = "Delete Book";
+}
+
+<h2>Delete Book</h2>
+
+<div id="alert-container"></div>
+
+<div class="alert alert-warning">
+    Are you sure you want to delete the book <strong>@Model.Title</strong> by <strong>@Model.Author</strong>?
+</div>
+
+<form id="deleteBookForm">
+    <input type="hidden" name="BookId" value="@Model.BookId" />
+
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="@Url.Action("Index","BookMaster")" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section scripts {
+    <script>
+        $(function () {
+            $("#deleteBookForm").on("submit", function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '@Url.Action("Delete", "BookMaster")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            window.location.href = '@Url.Action("Index", "BookMaster")';
+                        } else {
+                            $("#alert-container").html(
+                                `<div class="alert alert-danger">${res.message}</div>`
+                            );
+                        }
+                    },
+                    error: function () {
+                        $("#alert-container").html(
+                            `<div class="alert alert-danger">An error occurred while deleting the book.</div>`
+                        );
+                    }
+                });
+            });
+        });
+    </script>
+}

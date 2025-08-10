@@ -1,0 +1,23 @@
+﻿@model Library.Core.Models.MemberMaster
+@{
+    ViewBag.Title = "Add New Member";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-user-plus"></i> Add New Member</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Fill in the details below to add a new member to the library.</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb"></i> Use the modal dialog from the Members list for a better experience!
+                </div>
+                <a href="@Url.Action("Index", "MemberMaster")" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Members List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

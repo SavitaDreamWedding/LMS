@@ -1,0 +1,65 @@
+﻿@model Library.Core.Models.BookMaster
+
+@{
+    ViewBag.Title = "Create Book";
+}
+
+<h2>Create Book</h2>
+
+<div id="alert-container"></div>
+
+<form id="createBookForm">
+    <div class="mb-3">
+        <label for="Title" class="form-label">Title</label>
+        <input type="text" class="form-control" id="Title" name="Title" required />
+    </div>
+    <div class="mb-3">
+        <label for="Author" class="form-label">Author</label>
+        <input type="text" class="form-control" id="Author" name="Author" required />
+    </div>
+    <div class="mb-3">
+        <label for="ISBN" class="form-label">ISBN</label>
+        <input type="text" class="form-control" id="ISBN" name="ISBN" required />
+    </div>
+    <div class="mb-3">
+        <label for="TotalCopies" class="form-label">Total Copies</label>
+        <input type="number" class="form-control" id="TotalCopies" name="TotalCopies" min="1" required />
+    </div>
+    <div class="mb-3">
+        <label for="AvailableCopies" class="form-label">Available Copies</label>
+        <input type="number" class="form-control" id="AvailableCopies" name="AvailableCopies" min="0" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="@Url.Action("Index","BookMaster")" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section scripts {
+    <script>
+        $(function () {
+            $("#createBookForm").on("submit", function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    url: '@Url.Action("Create", "BookMaster")',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            window.location.href = '@Url.Action("Index", "BookMaster")';
+                        } else {
+                            $("#alert-container").html(
+                                `<div class="alert alert-danger">${res.message}</div>`
+                            );
+                        }
+                    },
+                    error: function () {
+                        $("#alert-container").html(
+                            `<div class="alert alert-danger">An error occurred while saving the book.</div>`
+                        );
+                    }
+                });
+            });
+        });
+    </script>
+}

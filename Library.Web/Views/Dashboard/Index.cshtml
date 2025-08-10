@@ -1,0 +1,185 @@
+﻿@model Library.Core.Models.ViewModels.DashboardViewModel
+@{
+    ViewBag.Title = "Dashboard";
+}
+
+<div id="alerts-container"></div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card books h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-book fa-2x mb-2"></i>
+                <h3>@(Model?.TotalBooks ?? 0)</h3>
+                <p class="mb-0">Total Books</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card members h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h3>@(Model?.TotalMembers ?? 0)</h3>
+                <p class="mb-0">Total Members</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-exchange-alt fa-2x mb-2"></i>
+                <h3>@(Model?.ActiveIssues ?? 0)</h3>
+                <p class="mb-0">Active Issues</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card dashboard-card overdue h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <h3>@(Model?.OverdueBooks ?? 0)</h3>
+                <p class="mb-0">Overdue Books</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Books Issued (Last 7 Days)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="issuesChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie"></i> Books by Category</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("Create", "BookMaster")" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-plus"></i> Add New Book
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("Create", "MemberMaster")" class="btn btn-outline-success w-100">
+                            <i class="fas fa-user-plus"></i> Add New Member
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("Issue", "BookIssue")" class="btn btn-outline-info w-100">
+                            <i class="fas fa-hand-holding"></i> Issue Book
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="@Url.Action("OverdueMembers", "Reports")" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-clock"></i> Overdue Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+$(document).ready(function() {
+    loadCharts();
+});
+
+function loadCharts() {
+    $.get('@Url.Action("GetChartData", "Dashboard")', function(response) {
+        if (response.success) {
+            createIssuesChart(response.issuesPerDay);
+            createCategoryChart(response.booksByCategory);
+        } else {
+            showAlert('error', 'Failed to load chart data: ' + response.message);
+        }
+    });
+}
+
+function createIssuesChart(data) {
+    var ctx = document.getElementById('issuesChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: data.map(d => d.Label),
+            datasets: [{
+                label: 'Books Issued',
+                data: data.map(d => d.Value),
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createCategoryChart(data) {
+    var ctx = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: data.map(d => d.Label),
+            datasets: [{
+                data: data.map(d => d.Value),
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+    </script>
+}

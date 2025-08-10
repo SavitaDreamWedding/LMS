@@ -1,0 +1,42 @@
+﻿
+@model IEnumerable<Library.Core.Models.BookMaster>
+
+@{
+    ViewBag.Title = "Book List";
+}
+
+<h2>Book List</h2>
+
+<p>
+    <a href="@Url.Action("Create", "BookMaster")" class="btn btn-primary">Create New</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Book ID</th>
+            <th>Title</th>
+            <th>Author</th>
+            <th>ISBN</th>
+            <th>Total Copies</th>
+            <th>Available Copies</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @* Example hard-coded rows just for UI testing *@
+        <tr>
+            <td>1</td>
+            <td>Sample Book</td>
+            <td>John Doe</td>
+            <td>1234567890</td>
+            <td>10</td>
+            <td>5</td>
+            <td>
+                <a href="@Url.Action("Edit", "BookMaster", new { id = 1 })">Edit</a> |
+                @*<a href="@Url.Action("Details", "BookMaster", new { id = 1 })">Details</a> |*@
+                <a href="@Url.Action("Delete", "BookMaster", new { id = 1 })">Delete</a>
+            </td>
+        </tr>
+    </tbody>
+</table>

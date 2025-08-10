@@ -1,0 +1,137 @@
+﻿@model Library.Core.Models.ViewModels.IssueBookViewModel
+@{
+    ViewBag.Title = "Issue Book";
+}
+<div id="alerts-container"></div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-hand-holding"></i> Issue Book to Member</h4>
+            </div>
+            <div class="card-body">
+                <form id="issueForm" novalidate>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="BookId" class="form-label">Select Book *</label>
+                            <select class="form-select" id="BookId" name="BookId" required>
+                                <option value="">-- Select Book --</option>
+                                @if (Model?.Books != null)
+                                {
+                                    foreach (var book in Model.Books)
+                                    {
+                                        <option value="@book.Value">@book.Text</option>
+                                    }
+                                }
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="MemberId" class="form-label">Select Member *</label>
+                            <select class="form-select" id="MemberId" name="MemberId" required>
+                                <option value="">-- Select Member --</option>
+                                @if (Model?.Members != null)
+                                {
+                                    foreach (var member in Model.Members)
+                                    {
+                                        <option value="@member.Value">@member.Text</option>
+                                    }
+                                }
+                            </select>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Issue Date</label>
+                            <input type="text" class="form-control" value="@DateTime.Now.ToString("dd/MM/yyyy")" readonly>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Due Date</label>
+                            <input type="text" class="form-control" value="@DateTime.Now.AddDays(7).ToString("dd/MM/yyyy")" readonly>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Note:</strong> Books are issued for 7 days. Late returns incur a fine of ₹10 per day.
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-hand-holding"></i> Issue Book
+                        </button>
+                        <a href="@Url.Action("Index", "BookIssue")" class="btn btn-secondary btn-lg ms-2">
+                            <i class="fas fa-arrow-left"></i> Back to Issues
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script>
+$(document).ready(function() {
+    // Initialize form validation
+    $('#issueForm').validate({
+        rules: {
+            BookId: { required: true },
+            MemberId: { required: true }
+        },
+        messages: {
+            BookId: { required: "Please select a book" },
+            MemberId: { required: "Please select a member" }
+        },
+        errorClass: "is-invalid",
+        validClass: "is-valid",
+        errorPlacement: function(error, element) {
+            error.addClass("invalid-feedback");
+            element.closest('.mb-3').find('.invalid-feedback').html(error.text());
+        },
+        highlight: function(element) {
+            $(element).addClass("is-invalid").removeClass("is-valid");
+        },
+        unhighlight: function(element) {
+            $(element).addClass("is-valid").removeClass("is-invalid");
+        }
+    });
+
+    // Handle form submission
+    $('#issueForm').on('submit', function(e) {
+        e.preventDefault();
+
+        if (!$(this).valid()) return;
+
+        var formData = {
+            bookId: $('#BookId').val(),
+            memberId: $('#MemberId').val()
+        };
+
+        $.post('@Url.Action("IssueBook", "BookIssue")', formData)
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('success', response.message);
+                    $('#issueForm')[0].reset();
+                    $('.is-invalid').removeClass('is-invalid');
+                    $('.is-valid').removeClass('is-valid');
+
+                    setTimeout(function() {
+                        window.location.href = '@Url.Action("Index", "BookIssue")';
+                    }, 2000);
+                } else {
+                    showAlert('error', response.message);
+                }
+            })
+            .fail(function() {
+                showAlert('error', 'An error occurred while issuing the book.');
+            });
+    });
+});
+    </script>
+}

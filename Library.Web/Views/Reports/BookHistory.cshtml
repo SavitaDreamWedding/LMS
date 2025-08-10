@@ -1,0 +1,98 @@
+﻿@model List<Library.Core.Models.BookIssue>
+@{
+    ViewBag.Title = "Book History";
+    var bookTitle = Model != null && Model.Any() ? Model.First().BookTitle : "Unknown Book";
+}
+
+<div id="alerts-container"></div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="fas fa-history"></i> Book History: @bookTitle</h2>
+    <button onclick="window.print()" class="btn btn-outline-primary">
+        <i class="fas fa-print"></i> Print Report
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        @if (Model != null && Model.Any())
+        {
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Total Issues:</strong> @Model.Count |
+                <strong>Currently Issued:</strong> @Model.Count(m => !m.IsReturned) |
+                <strong>Total Fines Collected:</strong> ₹@Model.Where(m => m.FineAmount.HasValue).Sum(m => m.FineAmount.Value)
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Member</th>
+                            <th>Issue Date</th>
+                            <th>Due Date</th>
+                            <th>Return Date</th>
+                            <th>Fine</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var issue in Model)
+                        {
+                            <tr class="@(!issue.IsReturned && issue.DueDate < DateTime.Now ? "table-warning" : "")">
+                                <td>
+                                    <strong>@issue.MemberName</strong><br>
+                                    <small class="text-muted">@issue.MemberMobile</small>
+                                </td>
+                                <td>@issue.IssueDate.ToString("dd/MM/yyyy")</td>
+                                <td>@issue.DueDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (issue.ReturnDate.HasValue)
+                                    {
+                                        @issue.ReturnDate.Value.ToString("dd/MM/yyyy")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Not returned</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (issue.FineAmount.HasValue && issue.FineAmount > 0)
+                                    {
+                                        <span class="text-danger">₹@issue.FineAmount</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">No fine</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (issue.IsReturned)
+                                    {
+                                        <span class="badge bg-success">Returned</span>
+                                    }
+                                    else if (issue.DueDate < DateTime.Now)
+                                    {
+                                        <span class="badge bg-danger">Overdue</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-primary">Issued</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info text-center">
+                <i class="fas fa-book fa-3x mb-3"></i>
+                <h4>No History Found</h4>
+                <p>This book has no issue history yet.</p>
+            </div>
+        }
+    </div>
+</div>

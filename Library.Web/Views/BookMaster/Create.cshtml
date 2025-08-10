@@ -1,0 +1,23 @@
+﻿@model Library.Core.Models.BookMaster
+@{
+    ViewBag.Title = "Add New Book";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-plus"></i> Add New Book</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Fill in the details below to add a new book to the library.</p>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb"></i> Use the modal dialog from the Books list for a better experience!
+                </div>
+                <a href="@Url.Action("Index", "BookMaster")" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Books List
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
